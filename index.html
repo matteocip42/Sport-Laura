@@ -651,7 +651,9 @@ function vActive(){
     <div class="sets"><div class="sethead"><span>#</span><span>Rép.</span><span></span><span>Charge (kg)</span><span></span></div>
     ${x.sets.map((s,j)=>`<div class="set ${s.ok?'done':''}">${s.l?`<b class="small" style="grid-column:1/-1">${esc(s.l)}</b>`:''}<span class="n">${j+1}</span><input type="text" inputmode="numeric" id="s_${i}_${j}_r" data-i="${i}" data-j="${j}" data-f="r" value="${esc(s.r)}" aria-label="Répétitions, série ${j+1}"><span class="faint">×</span><input type="text" inputmode="decimal" id="s_${i}_${j}_kg" data-i="${i}" data-j="${j}" data-f="kg" value="${esc(s.kg)}" placeholder="0" aria-label="Charge en kg, série ${j+1}"><button class="okb" data-act="setok" data-i="${i}" data-j="${j}" aria-label="Valider la série ${j+1}" aria-pressed="${!!s.ok}">✓</button></div>`).join('')}</div>
     <div class="row"><button class="btn ghost sm" data-act="setadd" data-i="${i}">+ Série</button>${x.sets.length>1?`<button class="btn ghost sm" data-act="setdel" data-i="${i}">− Série</button>`:''}</div></div>`;}).join('');
-  return `<div class="glass card"><div class="row between"><span class="small muted">Valide chaque série avec ✓ : le chrono de repos démarre tout seul.</span><span class="row"><span class="small faint">Repos</span>${[60,90,120].map(v=>`<button class="chip" data-act="rest" data-v="${v}" aria-pressed="${rest===v}">${v} s</button>`).join('')}</span></div></div>
+  return `<div class="glass card"><div class="row between"><span class="small muted">Valide chaque série avec ✓ : le chrono de repos démarre tout seul.</span><span class="row"><span class="small faint">Repos</span>${[60,90,120].map(v=>`<button class="chip" data-act="rest" data-v="${v}" aria-pressed="${rest===v}">${v} s</button>`).join('')}</span></div>
+  <div class="form-grid"><label class="field-l">Date de la séance<input type="date" id="mDate" max="${todayISO()}" value="${A.date||todayISO()}"></label><label class="field-l">Durée en minutes<input type="number" id="mMin" min="1" max="300" inputmode="numeric" placeholder="Chrono automatique" value="${A.min||''}"></label></div>
+  <p class="small faint">Pour noter une ancienne séance, change la date et indique sa durée.</p></div>
   ${exos||'<div class="glass card"><div class="empty">Ajoute ton premier exercice juste en dessous.</div></div>'}
   <div class="glass card"><h3>Ajouter un exercice</h3><div class="form-grid"><label class="field-l">Dans la liste<select id="addEx"><option value="">Choisir…</option>${all.map(([id,n])=>`<option value="${id}">${esc(n)}</option>`).join('')}</select></label><label class="field-l">Ou un nouveau<input type="text" id="addExNew" placeholder="Nom de l'exercice"></label></div><div><button class="btn ghost" data-act="exadd">Ajouter</button></div></div>
   <div class="row"><button class="btn" data-act="mfinish">Terminer la séance</button><button class="btn ghost" data-act="mcancel">Abandonner</button></div>`;
@@ -831,9 +833,9 @@ const mkEx=id=>{const last=lastFor(id),tg=targetFor(id);return{id,n:exName(id),s
 function finishMuscu(){
   const ex=A.ex.map(x=>({id:x.id,n:x.n,sets:x.sets.filter(s=>s.ok&&num(s.r)>0).map(s=>Object.assign({r:num(s.r),kg:num(s.kg)},s.l?{l:s.l}:{}))})).filter(x=>x.sets.length);
   if(!ex.length){toast('Valide au moins une série avec ✓ avant de terminer.');return;}
-  const before=records().best,min=Math.max(1,Math.min(300,Math.round((Date.now()-A.start)/60000)));
+  const before=records().best,min=A.min||Math.max(1,Math.min(300,Math.round((Date.now()-A.start)/60000)));
   const recs=ex.filter(x=>{const m=metric(x),b=before[x.id];return b&&b.u===m.u&&m.v>b.v;});
-  addLog({kind:'muscu',date:todayISO(),prog:A.prog,min,ex});A=null;REST=null;saveDraft();renderTimer();SUB.muscu='histo';renderView();window.scrollTo({top:0});
+  addLog({kind:'muscu',date:A.date&&A.date<=todayISO()?A.date:todayISO(),prog:A.prog,min,ex});A=null;REST=null;saveDraft();renderTimer();SUB.muscu='histo';renderView();window.scrollTo({top:0});
   if(recs.length){confetti();toast('Nouveau record : '+recs.map(x=>x.n).join(', ')+' !');}else toast('Séance enregistrée. Bien joué '+NAME+' !');
 }
 document.addEventListener('click',e=>{
@@ -891,6 +893,8 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;if(A&&el.dataset&&el.dataset.f){A.ex[el.dataset.i].sets[el.dataset.j][el.dataset.f]=el.value;saveDraft();}});
 document.addEventListener('change',e=>{
+  if(A&&e.target.id==='mDate'){const v=e.target.value;A.date=v&&v<=todayISO()?v:null;saveDraft();if(v&&v>todayISO()){toast('Choisis une date passée ou aujourd\'hui.');e.target.value=todayISO();}}
+  if(A&&e.target.id==='mMin'){const v=Math.round(num(e.target.value));A.min=v>=1&&v<=300?v:null;saveDraft();}
   if(e.target.id==='progEx'){PEXSEL=e.target.value;e.target.blur();renderView();}
   if(e.target.id==='sleepIn'){const v=num(e.target.value);setDay(todayISO(),{s:v>0&&v<=14?v:null});}
 });
