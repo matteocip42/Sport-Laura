@@ -228,7 +228,7 @@ td.r,th.r{text-align:right}
 .qty{font-weight:750;color:var(--fg-2);font-size:13.5px;white-space:nowrap;margin-top:2px}
 .pickgrid{display:grid;gap:6px;max-height:48vh;overflow:auto;padding:2px}
 .pickgrid .chip,.wkpick .chip{text-align:left;white-space:normal;border-radius:12px;padding:9px 12px}
-.wkpick{display:grid;grid-template-columns:62px repeat(4,1fr);gap:4px;align-items:center;font-size:12.5px;font-weight:650}
+.wkpick{display:grid;grid-template-columns:80px repeat(2,1fr);gap:4px;align-items:center;font-size:12.5px;font-weight:650}
 .wkpick .chip{padding:8px 4px;text-align:center;font-size:12px}
 .wkpick .chip.full{opacity:.55}
 
@@ -792,7 +792,7 @@ function vPilates(){
   return head+routineCards('pilates',ROUTINES)+`<div class="note">La séance s'enregistre toute seule dans ton journal quand tu vas au bout de la routine.</div>`;
 }
 
-const SLOTS=[['p','Petit-déj','P-déj',['pdj']],['m','Midi','Midi',['dej','din']],['c','Entre-repas','Entre',['col','pre','post']],['s','Dîner','Dîner',['din','dej']]];
+const SLOTS=[['m','Midi','Midi',['dej','din']],['s','Dîner','Dîner',['din','dej']]];
 const SLN=Object.fromEntries(SLOTS.map(x=>[x[0],x[1]]));
 const fold=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/œ/g,'oe');
 const weekMon=()=>addDays(monOf(todayISO()),WOFF*7);
